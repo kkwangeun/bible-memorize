@@ -1,6 +1,2008 @@
 <!DOCTYPE html>
 <html lang="ko">
+<head><!DOCTYPE html>
+<html lang="ko">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="롬8 정복">
+<meta name="theme-color" content="#1a1a17">
+<title>로마서 8장 정복</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  input, .verse-text-display { user-select: text; -webkit-user-select: text; }
+  :root {
+    --bg: #0f1115;
+    --bg-grad: linear-gradient(180deg, #0f1115 0%, #161922 100%);
+    --surface: #1d212c;
+    --surface-2: #262b39;
+    --surface-3: #303647;
+    --text: #f1efe8;
+    --text-2: #aab1c2;
+    --text-3: #6e7587;
+    --border: rgba(255,255,255,0.08);
+    --border-2: rgba(255,255,255,0.16);
+    --accent: #6ba3f0;
+    --accent-bg: #1a3358;
+    --accent-border: #2e5491;
+    --gold: #f6c64e;
+    --gold-bg: #4d3a0c;
+    --gold-glow: rgba(246,198,78,0.4);
+    --success: #5dcaa5;
+    --success-bg: #143b30;
+    --success-border: #1f6450;
+    --warning: #f5a847;
+    --warning-bg: #4a2d0a;
+    --warning-border: #7d4d11;
+    --danger: #f47174;
+    --danger-bg: #4a1414;
+    --danger-border: #7a2424;
+    --purple: #b08bf0;
+    --purple-bg: #2b1e4d;
+    --purple-border: #4a3580;
+  }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+    background: var(--bg-grad);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    padding: max(env(safe-area-inset-top), 1rem) 1rem max(env(safe-area-inset-bottom), 1rem);
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 100vh;
+  }
+
+  /* ===== 상단 헤더 ===== */
+  .top-header {
+    margin-bottom: 1rem;
+  }
+  .top-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.5px;
+  }
+  .top-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .top-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .top-stat.streak { color: var(--warning); }
+  .top-stat.stars { color: var(--gold); }
+
+  /* ===== 스테이지 카드 ===== */
+  .stage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .stage-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .stage-card:active { transform: scale(0.99); }
+  .stage-card.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .stage-card.locked:active { transform: none; }
+  .stage-card.current {
+    background: linear-gradient(135deg, var(--accent-bg), var(--surface));
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 1px var(--accent-border), 0 4px 16px rgba(107,163,240,0.15);
+  }
+  .stage-card.cleared {
+    background: var(--surface);
+  }
+  .stage-card.boss {
+    background: linear-gradient(135deg, var(--purple-bg), var(--surface));
+    border-color: var(--purple-border);
+  }
+  .stage-card.boss.locked { background: var(--surface); }
+  .stage-card.boss.cleared {
+    background: linear-gradient(135deg, var(--gold-bg), var(--surface));
+    border-color: var(--gold);
+    box-shadow: 0 0 24px var(--gold-glow);
+  }
+  .stage-icon {
+    flex: 0 0 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: var(--surface-2);
+  }
+  .stage-card.current .stage-icon { background: var(--accent); color: white; }
+  .stage-card.cleared .stage-icon { background: var(--success-bg); color: var(--success); }
+  .stage-card.boss .stage-icon { background: var(--purple); color: white; }
+  .stage-card.boss.cleared .stage-icon { background: var(--gold); color: var(--bg); }
+  .stage-body { flex: 1; min-width: 0; }
+  .stage-name {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .stage-meta {
+    font-size: 12px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stars-display {
+    display: inline-flex;
+    gap: 1px;
+  }
+  .star {
+    color: var(--gold);
+    font-size: 11px;
+  }
+  .star.empty { color: var(--text-3); opacity: 0.3; }
+  .stage-arrow {
+    color: var(--text-3);
+    font-size: 18px;
+    flex: 0 0 auto;
+  }
+
+  /* ===== 자유 학습 박스 ===== */
+  .freestyle-box {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 1rem;
+  }
+  .freestyle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .freestyle-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+  .freestyle-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .freestyle-btn {
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 4px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text);
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .freestyle-btn:active { transform: scale(0.97); }
+  .freestyle-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .freestyle-btn-icon { font-size: 16px; }
+
+  /* ===== 스테이지 상세 화면 ===== */
+  .screen {
+    display: none;
+  }
+  .screen.active {
+    display: block;
+  }
+  .screen-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+  .back-btn {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 18px;
+    flex: 0 0 36px;
+  }
+  .screen-title {
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .screen-stage-info {
+    color: var(--text-3);
+    font-size: 12px;
+    text-align: right;
+  }
+
+  /* 미션 리스트 */
+  .mission-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+  .mission-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.15s;
+  }
+  .mission-card:active { transform: scale(0.99); }
+  .mission-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .mission-card.locked:active { transform: none; }
+  .mission-card.cleared { background: var(--surface); }
+  .mission-card.current {
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 1px var(--accent-border);
+  }
+  .mission-num {
+    flex: 0 0 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-2);
+  }
+  .mission-card.cleared .mission-num {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .mission-card.current .mission-num {
+    background: var(--accent);
+    color: white;
+  }
+  .mission-info { flex: 1; min-width: 0; }
+  .mission-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .mission-desc {
+    font-size: 11px;
+    color: var(--text-3);
+  }
+
+  /* 미션 실행 화면 */
+  .mission-runner {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .mission-runner-title {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 6px;
+  }
+  .mission-runner-desc {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .verse-text-display {
+    font-size: 16px;
+    line-height: 2;
+    padding: 14px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    margin: 10px 0;
+  }
+  .verse-text-display.large { font-size: 17px; }
+  .verse-text-display.dim { color: var(--text-3); }
+  .progress-text {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 12px 0;
+  }
+  .big-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 16px rgba(107,163,240,0.25);
+  }
+  .big-btn:active { transform: scale(0.98); }
+  .big-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .big-btn.success {
+    background: var(--success);
+    box-shadow: 0 4px 16px rgba(93,202,165,0.25);
+  }
+  .big-btn.danger {
+    background: var(--danger);
+    box-shadow: 0 4px 16px rgba(244,113,116,0.25);
+  }
+  .secondary-btn {
+    width: 100%;
+    background: transparent;
+    color: var(--text-2);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .secondary-btn:active { transform: scale(0.98); }
+
+  /* 글자 힌트 */
+  .hint-char { color: var(--accent); font-weight: 600; }
+  .hint-rest { color: var(--text-3); letter-spacing: -0.5px; }
+  .blank {
+    display: inline-block;
+    border-bottom: 1.5px solid var(--text-2);
+    min-width: 2.2em;
+    padding: 0 4px;
+    text-align: center;
+    color: transparent;
+    cursor: pointer;
+    margin: 0 1px;
+    border-radius: 2px;
+  }
+  .blank.revealed {
+    color: var(--accent);
+    border-bottom-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+  .blank.correct {
+    color: var(--success);
+    border-bottom-color: var(--success-border);
+    background: var(--success-bg);
+  }
+  .blank.wrong {
+    color: var(--danger);
+    border-bottom-color: var(--danger-border);
+    background: var(--danger-bg);
+  }
+  .word-ok { color: var(--success); font-weight: 500; }
+  .word-partial {
+    color: var(--warning);
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: var(--warning-border);
+  }
+  .word-missing {
+    color: var(--danger);
+    background: var(--danger-bg);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  /* 카운터 */
+  .count-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 1rem 0;
+  }
+  .count-num {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .count-divider {
+    font-size: 24px;
+    color: var(--text-3);
+  }
+  .count-target {
+    font-size: 24px;
+    color: var(--text-2);
+  }
+
+  /* 마이크 버튼 */
+  .mic-btn-big {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .mic-btn-big.recording {
+    background: var(--danger);
+    animation: pulse 1.2s infinite;
+  }
+  .mic-btn-big:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    animation: none;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  .test-status {
+    font-size: 13px;
+    color: var(--text-2);
+    text-align: center;
+    margin: 10px 0;
+    min-height: 18px;
+  }
+
+  /* 점수 / 결과 카드 */
+  .score-card {
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 1rem 0;
+    text-align: center;
+  }
+  .score-num {
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-label {
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .score-card.pass .score-num { color: var(--success); }
+  .score-card.fail .score-num { color: var(--danger); }
+  .pass-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .pass-badge.pass {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .pass-badge.fail {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+
+  /* ===== 미션 보상 (별 획득 시) ===== */
+  .reward-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+  }
+  .reward-overlay.show { display: flex; }
+  .reward-content {
+    background: var(--surface);
+    border: 0.5px solid var(--gold);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    max-width: 320px;
+    width: 100%;
+    box-shadow: 0 0 60px var(--gold-glow);
+    animation: rewardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes rewardPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .reward-title {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+  .reward-headline {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .reward-stars {
+    font-size: 48px;
+    margin: 14px 0;
+    letter-spacing: 4px;
+  }
+  .reward-star {
+    display: inline-block;
+    animation: starPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .reward-star.gold { color: var(--gold); filter: drop-shadow(0 0 12px var(--gold-glow)); }
+  .reward-star.empty { color: var(--text-3); opacity: 0.3; }
+  @keyframes starPop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+  .reward-message {
+    font-size: 14px;
+    color: var(--text-2);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  .reward-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* ===== 인증서 ===== */
+  .certificate {
+    background: linear-gradient(135deg, #f6c64e 0%, #f5a847 100%);
+    color: #2a1f08;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+    box-shadow: 0 0 40px var(--gold-glow);
+  }
+  .cert-emblem { font-size: 48px; margin-bottom: 8px; }
+  .cert-title {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .cert-headline {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .cert-text {
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .cert-detail {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 16px;
+  }
+
+  /* ===== 토스트 ===== */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--surface-2);
+    border: 0.5px solid var(--border);
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-size: 13px;
+    color: var(--text);
+    z-index: 200;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== 확신 게이지 ===== */
+  .confidence-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 12px 0;
+  }
+  .conf-btn {
+    padding: 10px 6px;
+    border-radius: 10px;
+    border: 0.5px solid;
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .conf-btn:active { transform: scale(0.97); }
+  .conf-btn.no {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-color: var(--danger-border);
+  }
+  .conf-btn.mid {
+    background: var(--warning-bg);
+    color: var(--warning);
+    border-color: var(--warning-border);
+  }
+  .conf-btn.yes {
+    background: var(--success-bg);
+    color: var(--success);
+    border-color: var(--success-border);
+  }
+
+  /* ===== 입력박스 (빈칸 미션) ===== */
+  .blank-input {
+    display: inline-block;
+    min-width: 3em;
+    padding: 2px 6px;
+    background: var(--surface-2);
+    border: 0.5px solid var(--border-2);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    text-align: center;
+    margin: 0 2px;
+    outline: none;
+  }
+  .blank-input:focus {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+  .blank-input.correct {
+    border-color: var(--success-border);
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  .blank-input.wrong {
+    border-color: var(--danger-border);
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+
+  /* 메뉴 (햄버거) */
+  .menu-btn {
+    position: absolute;
+    top: max(env(safe-area-inset-top), 1rem);
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 6px;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<!-- 메인 화면 -->
+<div class="screen active" id="screen-home">
+  <button class="menu-btn" onclick="openMenu()">⚙ 설정</button>
+  <header class="top-header">
+    <h1 class="top-title">🏆 로마서 8장 정복</h1>
+    <div class="top-stats">
+      <span class="top-stat stars">⭐ <span id="total-stars">0</span> / <span id="max-stars">0</span></span>
+      <span class="top-stat streak">🔥 <span id="streak-days">0</span>일 연속</span>
+      <span class="top-stat">📅 <span id="cleared-count">0</span>/11</span>
+    </div>
+  </header>
+
+  <div class="stage-list" id="stage-list"></div>
+
+  <div class="freestyle-box">
+    <div class="freestyle-header">
+      <span class="freestyle-title">🔓 자유 학습</span>
+      <span style="font-size:11px;color:var(--text-3);" id="freestyle-status">스테이지 클리어 후 해제</span>
+    </div>
+    <div class="freestyle-grid">
+      <button class="freestyle-btn" id="free-full" onclick="openFreestyle('full')" disabled>
+        <span class="freestyle-btn-icon">📖</span><span>전체</span>
+      </button>
+      <button class="freestyle-btn" id="free-hint" onclick="openFreestyle('hint')" disabled>
+        <span class="freestyle-btn-icon">👁</span><span>첫글자</span>
+      </button>
+      <button class="freestyle-btn" id="free-blank" onclick="openFreestyle('blank')" disabled>
+        <span class="freestyle-btn-icon">✏️</span><span>빈칸</span>
+      </button>
+      <button class="freestyle-btn" id="free-test" onclick="openFreestyle('test')" disabled>
+        <span class="freestyle-btn-icon">🎤</span><span>테스트</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 스테이지 상세 -->
+<div class="screen" id="screen-stage">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h2 class="screen-title" id="stage-title">스테이지</h2>
+    <div class="screen-stage-info" id="stage-info">⭐ 0 / 15</div>
+  </div>
+  <div class="mission-list" id="mission-list"></div>
+</div>
+
+<!-- 미션 실행 -->
+<div class="screen" id="screen-mission">
+  <div class="screen-header">
+    <button class="back-btn" onclick="exitMission()">‹</button>
+    <h2 class="screen-title" id="mission-title">미션</h2>
+  </div>
+  <div id="mission-content"></div>
+</div>
+
+<!-- 자유 학습 -->
+<div class="screen" id="screen-freestyle">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h2 class="screen-title" id="freestyle-title">자유 학습</h2>
+  </div>
+  <div id="freestyle-content"></div>
+</div>
+
+<!-- 보스 -->
+<div class="screen" id="screen-boss">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h2 class="screen-title">⚔️ 최종 보스</h2>
+  </div>
+  <div id="boss-content"></div>
+</div>
+
+<!-- 설정 -->
+<div class="screen" id="screen-menu">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">‹</button>
+    <h2 class="screen-title">⚙ 설정</h2>
+  </div>
+  <div id="menu-content"></div>
+</div>
+
+<!-- 보상 오버레이 -->
+<div class="reward-overlay" id="reward-overlay">
+  <div class="reward-content">
+    <div class="reward-title" id="reward-title">미션 완료</div>
+    <div class="reward-headline" id="reward-headline">🎉</div>
+    <div class="reward-stars" id="reward-stars"></div>
+    <div class="reward-message" id="reward-message"></div>
+    <button class="reward-btn" onclick="closeReward()">계속하기</button>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 데이터 ==========
+const verses = [
+  { n: 1, text: "그러므로 이제 그리스도 예수 안에 있는 자에게는 결코 정죄함이 없나니" },
+  { n: 2, text: "이는 그리스도 예수 안에 있는 생명의 성령의 법이 죄와 사망의 법에서 너를 해방하였음이라" },
+  { n: 3, text: "율법이 육신으로 말미암아 연약하여 할 수 없는 그것을 하나님은 하시나니 곧 죄로 말미암아 자기 아들을 죄 있는 육신의 모양으로 보내어 육신에 죄를 정하사" },
+  { n: 4, text: "육신을 따르지 않고 그 영을 따라 행하는 우리에게 율법의 요구가 이루어지게 하려 하심이니라" },
+  { n: 5, text: "육신을 따르는 자는 육신의 일을, 영을 따르는 자는 영의 일을 생각하나니" },
+  { n: 6, text: "육신의 생각은 사망이요 영의 생각은 생명과 평안이니라" },
+  { n: 7, text: "육신의 생각은 하나님과 원수가 되나니 이는 하나님의 법에 굴복하지 아니할 뿐 아니라 할 수도 없음이라" },
+  { n: 8, text: "육신에 있는 자들은 하나님을 기쁘시게 할 수 없느니라" },
+  { n: 9, text: "만일 너희 속에 하나님의 영이 거하시면 너희가 육신에 있지 아니하고 영에 있나니 누구든지 그리스도의 영이 없으면 그리스도의 사람이 아니라" },
+  { n: 10, text: "또 그리스도께서 너희 안에 계시면 몸은 죄로 말미암아 죽은 것이나 영은 의로 말미암아 살아 있는 것이니라" },
+  { n: 11, text: "예수를 죽은 자 가운데서 살리신 이의 영이 너희 안에 거하시면 그리스도 예수를 죽은 자 가운데서 살리신 이가 너희 안에 거하시는 그의 영으로 말미암아 너희 죽을 몸도 살리시리라" }
+];
+
+const MISSIONS = [
+  { id: 'read', name: '📖 익히기', desc: '본문 5회 소리내어 읽기' },
+  { id: 'hint', name: '👁 첫글자 외우기', desc: '첫글자만 보고 3회 떠올리기' },
+  { id: 'blank', name: '✏️ 빈칸 채우기', desc: '60% 빈칸을 모두 정확히' },
+  { id: 'voice', name: '🎤 음성 암송', desc: '한 어절도 빠뜨리지 않기' },
+  { id: 'integration', name: '⚡ 누적 암송', desc: '이전 절 + 이번 절 모두 정확히' }
+];
+
+const STORAGE_KEY = 'rom8_game_v4';
+
+// ========== 상태 ==========
+let state = {
+  // 게임 진행
+  stages: {},  // { 1: { missions: { read: { cleared, stars, best }, ... }, cleared, stars } }
+  bossCleared: false,
+  bossBestScore: 0,
+  bossCertDate: null,
+  // 통계
+  totalStars: 0,
+  streak: 0,
+  lastStudyDate: null,
+  // 현재 화면
+  currentStage: null,
+  currentMission: null,
+  currentScreen: 'home',
+  // 미션 진행 상태 (휘발성)
+  runner: null,
+  freestyleMode: null,
+  freestyleVerse: 0
+};
+
+function defaultStage(n) {
+  const missions = {};
+  MISSIONS.forEach(m => {
+    if (n === 1 && m.id === 'integration') return; // 1절은 누적 미션 없음
+    missions[m.id] = { cleared: false, stars: 0, best: 0, count: 0 };
+  });
+  return { n, missions, cleared: false, stars: 0 };
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state = { ...state, ...saved, runner: null, currentStage: null, currentMission: null, currentScreen: 'home' };
+    }
+  } catch (e) {}
+  // 스테이지 기본값 채우기
+  for (const v of verses) {
+    if (!state.stages[v.n]) state.stages[v.n] = defaultStage(v.n);
+  }
+  recalcTotals();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      stages: state.stages,
+      bossCleared: state.bossCleared,
+      bossBestScore: state.bossBestScore,
+      bossCertDate: state.bossCertDate,
+      totalStars: state.totalStars,
+      streak: state.streak,
+      lastStudyDate: state.lastStudyDate
+    }));
+  } catch (e) {}
+}
+
+function recalcTotals() {
+  let total = 0, max = 0;
+  for (const v of verses) {
+    const s = state.stages[v.n];
+    const missionCount = Object.keys(s.missions).length;
+    max += missionCount * 3;
+    total += Object.values(s.missions).reduce((sum, m) => sum + m.stars, 0);
+  }
+  state.totalStars = total;
+  state.maxStars = max;
+}
+
+function updateStreak() {
+  const today = todayStr();
+  if (state.lastStudyDate === today) return;
+  const yesterday = new Date(Date.now() - 86400000);
+  const yStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+  if (state.lastStudyDate === yStr) {
+    state.streak = (state.streak || 0) + 1;
+  } else {
+    state.streak = 1;
+  }
+  state.lastStudyDate = today;
+}
+
+// ========== 잠금 해제 로직 ==========
+function isStageUnlocked(n) {
+  if (n === 1) return true;
+  return state.stages[n - 1].cleared;
+}
+function isBossUnlocked() {
+  return verses.every(v => state.stages[v.n].cleared);
+}
+function isMissionUnlocked(stageN, missionIdx) {
+  if (missionIdx === 0) return true;
+  const stage = state.stages[stageN];
+  const missionIds = MISSIONS.filter(m => stage.missions[m.id]).map(m => m.id);
+  for (let i = 0; i < missionIdx; i++) {
+    if (!stage.missions[missionIds[i]].cleared) return false;
+  }
+  return true;
+}
+function isFreestyleUnlocked() {
+  return verses.some(v => state.stages[v.n].cleared);
+}
+
+// ========== 화면 전환 ==========
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  state.currentScreen = name;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goHome() {
+  if (isRecording) stopRecording();
+  state.currentStage = null;
+  state.currentMission = null;
+  state.runner = null;
+  showScreen('home');
+  renderHome();
+}
+
+function openStage(n) {
+  if (!isStageUnlocked(n)) {
+    showToast('🔒 이전 스테이지를 먼저 클리어해주세요');
+    return;
+  }
+  state.currentStage = n;
+  showScreen('stage');
+  renderStage();
+}
+
+function openMission(missionId) {
+  const stage = state.stages[state.currentStage];
+  const missionIds = MISSIONS.filter(m => stage.missions[m.id]).map(m => m.id);
+  const idx = missionIds.indexOf(missionId);
+  if (!isMissionUnlocked(state.currentStage, idx)) {
+    showToast('🔒 이전 미션을 먼저 깨주세요');
+    return;
+  }
+  state.currentMission = missionId;
+  initMissionRunner(missionId);
+  showScreen('mission');
+  renderMission();
+}
+
+function exitMission() {
+  if (isRecording) stopRecording();
+  if (state.runner && state.runner.dirty && !state.runner.completed) {
+    if (!confirm('미션 진행 상황이 있어요. 정말 나갈까요?')) return;
+  }
+  state.currentMission = null;
+  state.runner = null;
+  showScreen('stage');
+  renderStage();
+}
+
+function openBoss() {
+  if (!isBossUnlocked()) {
+    showToast('🔒 모든 스테이지를 클리어해야 보스가 열려요');
+    return;
+  }
+  showScreen('boss');
+  renderBoss();
+}
+
+function openFreestyle(mode) {
+  if (!isFreestyleUnlocked()) {
+    showToast('🔒 첫 스테이지를 클리어해야 자유 학습이 열려요');
+    return;
+  }
+  state.freestyleMode = mode;
+  showScreen('freestyle');
+  renderFreestyle();
+}
+
+function openMenu() {
+  showScreen('menu');
+  renderMenu();
+}
+
+// ========== 메인 화면 렌더링 ==========
+function renderHome() {
+  recalcTotals();
+  updateStreak();
+  saveState();
+
+  document.getElementById('total-stars').textContent = state.totalStars;
+  document.getElementById('max-stars').textContent = state.maxStars;
+  document.getElementById('streak-days').textContent = state.streak || 0;
+  document.getElementById('cleared-count').textContent = verses.filter(v => state.stages[v.n].cleared).length;
+
+  const list = document.getElementById('stage-list');
+  let html = '';
+  for (const v of verses) {
+    const stage = state.stages[v.n];
+    const unlocked = isStageUnlocked(v.n);
+    const missionCount = Object.keys(stage.missions).length;
+    let cls = 'stage-card';
+    let icon = '🔒';
+    let nameText = `<span style="color:var(--text-3);">스테이지 ${v.n} — ${v.n}절</span>`;
+    let meta = '';
+
+    if (!unlocked) {
+      cls += ' locked';
+      meta = '잠김';
+    } else if (stage.cleared) {
+      cls += ' cleared';
+      icon = '✓';
+      nameText = `스테이지 ${v.n} — ${v.n}절`;
+      meta = renderStarsInline(stage.stars, missionCount * 3) + ` · ${stage.stars}/${missionCount * 3}`;
+    } else {
+      cls += ' current';
+      icon = '▶';
+      nameText = `스테이지 ${v.n} — ${v.n}절`;
+      const clearedMissions = Object.values(stage.missions).filter(m => m.cleared).length;
+      meta = `진행 중 · 미션 ${clearedMissions}/${missionCount}`;
+    }
+    html += `
+      <div class="${cls}" onclick="openStage(${v.n})">
+        <div class="stage-icon">${icon}</div>
+        <div class="stage-body">
+          <div class="stage-name">${nameText}</div>
+          <div class="stage-meta">${meta}</div>
+        </div>
+        <div class="stage-arrow">›</div>
+      </div>
+    `;
+  }
+  // 보스
+  const bossUnlocked = isBossUnlocked();
+  let bossCls = 'stage-card boss';
+  let bossIcon = '⚔️';
+  let bossMeta = '';
+  if (!bossUnlocked) {
+    bossCls += ' locked';
+    bossIcon = '🔒';
+    bossMeta = '모든 스테이지 클리어 후 해제';
+  } else if (state.bossCleared) {
+    bossCls += ' cleared';
+    bossIcon = '👑';
+    bossMeta = `최고점 ${state.bossBestScore}점 · 인증 완료`;
+  } else {
+    bossMeta = '도전 가능';
+  }
+  html += `
+    <div class="${bossCls}" onclick="openBoss()">
+      <div class="stage-icon">${bossIcon}</div>
+      <div class="stage-body">
+        <div class="stage-name">최종 보스 — 1~11절 연속 암송</div>
+        <div class="stage-meta">${bossMeta}</div>
+      </div>
+      <div class="stage-arrow">›</div>
+    </div>
+  `;
+  list.innerHTML = html;
+
+  // 자유 학습 잠금 상태
+  const freeUnlocked = isFreestyleUnlocked();
+  document.getElementById('freestyle-status').textContent = freeUnlocked
+    ? `${verses.filter(v => state.stages[v.n].cleared).length}절까지 해제됨`
+    : '스테이지 클리어 후 해제';
+  ['free-full', 'free-hint', 'free-blank', 'free-test'].forEach(id => {
+    document.getElementById(id).disabled = !freeUnlocked;
+  });
+}
+
+function renderStarsInline(stars, max) {
+  let html = '<span class="stars-display">';
+  for (let i = 0; i < max; i++) {
+    html += `<span class="star${i < stars ? '' : ' empty'}">★</span>`;
+  }
+  html += '</span>';
+  return html;
+}
+
+// ========== 스테이지 화면 ==========
+function renderStage() {
+  const n = state.currentStage;
+  const stage = state.stages[n];
+  const missionList = MISSIONS.filter(m => stage.missions[m.id]);
+  const totalStars = Object.values(stage.missions).reduce((s, m) => s + m.stars, 0);
+  const maxStars = missionList.length * 3;
+
+  document.getElementById('stage-title').textContent = `스테이지 ${n} — ${n}절`;
+  document.getElementById('stage-info').innerHTML = `${renderStarsInline(totalStars, maxStars)}<br><span style="color:var(--text-3);font-size:11px;">${totalStars}/${maxStars}</span>`;
+
+  let html = '<div class="verse-text-display" style="margin-bottom:1rem;">' + verses.find(v => v.n === n).text + '</div>';
+  html += '<div class="mission-list">';
+  missionList.forEach((m, idx) => {
+    const mission = stage.missions[m.id];
+    const unlocked = isMissionUnlocked(n, idx);
+    let cls = 'mission-card';
+    let numContent = idx + 1;
+    if (!unlocked) cls += ' locked';
+    else if (mission.cleared) {
+      cls += ' cleared';
+      numContent = '✓';
+    } else cls += ' current';
+    const starsHtml = mission.cleared
+      ? renderStarsInline(mission.stars, 3)
+      : `<span style="color:var(--text-3);">미완료</span>`;
+    html += `
+      <div class="${cls}" onclick="openMission('${m.id}')">
+        <div class="mission-num">${numContent}</div>
+        <div class="mission-info">
+          <div class="mission-title">${m.name}</div>
+          <div class="mission-desc">${m.desc} · ${starsHtml}</div>
+        </div>
+        <div class="stage-arrow">›</div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  document.getElementById('mission-list').innerHTML = html;
+}
+
+// ========== 미션 실행 ==========
+function initMissionRunner(missionId) {
+  const n = state.currentStage;
+  state.runner = { missionId, n, dirty: false, completed: false };
+
+  if (missionId === 'read') {
+    state.runner.count = 0;
+    state.runner.target = 5;
+  } else if (missionId === 'hint') {
+    state.runner.count = 0;
+    state.runner.target = 3;
+    state.runner.phase = 'try'; // try → reveal → confirm
+  } else if (missionId === 'blank') {
+    state.runner.phase = 'fill'; // fill → graded
+    state.runner.answers = {};
+    state.runner.blanks = generateBlanks(verses.find(v => v.n === n).text, 0.6, n);
+  } else if (missionId === 'voice') {
+    state.runner.phase = 'idle'; // idle → recording → graded
+    state.runner.heard = '';
+    state.runner.result = null;
+  } else if (missionId === 'integration') {
+    state.runner.phase = 'idle';
+    state.runner.heard = '';
+    state.runner.result = null;
+  }
+}
+
+function renderMission() {
+  const r = state.runner;
+  const mission = MISSIONS.find(m => m.id === r.missionId);
+  document.getElementById('mission-title').textContent = mission.name;
+  const v = verses.find(x => x.n === r.n);
+  const content = document.getElementById('mission-content');
+
+  if (r.missionId === 'read') {
+    content.innerHTML = `
+      <div class="mission-runner">
+        <div class="mission-runner-title">미션 1 · 익히기</div>
+        <div class="mission-runner-desc">아래 본문을 5번 소리내어 읽으세요.<br><span style="font-size:13px;color:var(--text-3);">한 번 읽을 때마다 아래 버튼을 누르세요.</span></div>
+        <div class="verse-text-display large">${v.text}</div>
+        <div class="count-display">
+          <span class="count-num">${r.count}</span>
+          <span class="count-divider">/</span>
+          <span class="count-target">${r.target}</span>
+        </div>
+        <button class="big-btn" onclick="readPlus()" ${r.count >= r.target ? 'disabled' : ''}>
+          ${r.count >= r.target ? '✓ 5회 완료!' : '+1 읽음'}
+        </button>
+        ${r.count > 0 ? '<button class="secondary-btn" onclick="readMinus()">한 번 취소</button>' : ''}
+        ${r.count >= r.target ? '<button class="big-btn success" style="margin-top:8px;" onclick="completeMission(\'read\', 3, 100)">미션 클리어 ⭐⭐⭐</button>' : ''}
+      </div>
+    `;
+  }
+  else if (r.missionId === 'hint') {
+    if (r.phase === 'try') {
+      content.innerHTML = `
+        <div class="mission-runner">
+          <div class="mission-runner-title">미션 2 · 첫글자 외우기</div>
+          <div class="mission-runner-desc">첫글자를 보고 머릿속으로 외워보세요.<br><span style="font-size:13px;color:var(--text-3);">${r.count + 1}번째 시도 / ${r.target}회 필요</span></div>
+          <div class="verse-text-display large">${renderFirstChar(v.text)}</div>
+          <button class="big-btn" onclick="hintReveal()">정답 보기</button>
+        </div>
+      `;
+    } else if (r.phase === 'confirm') {
+      content.innerHTML = `
+        <div class="mission-runner">
+          <div class="mission-runner-title">미션 2 · 첫글자 외우기</div>
+          <div class="mission-runner-desc">방금 외운 것과 비교해보세요.</div>
+          <div class="verse-text-display large">${v.text}</div>
+          <div class="mission-runner-desc" style="text-align:center;margin-top:1rem;">잘 떠올렸나요?</div>
+          <div class="confidence-row">
+            <button class="conf-btn no" onclick="hintConfirm('no')">😵 거의 못함</button>
+            <button class="conf-btn mid" onclick="hintConfirm('mid')">😅 부분만</button>
+            <button class="conf-btn yes" onclick="hintConfirm('yes')">😎 잘 외움</button>
+          </div>
+          <div class="progress-text">진행: ${r.count} / ${r.target} 성공</div>
+        </div>
+      `;
+    }
+  }
+  else if (r.missionId === 'blank') {
+    if (r.phase === 'fill') {
+      const html = r.blanks.map((w, i) => {
+        if (w.isBlank) {
+          return `<input type="text" class="blank-input" data-idx="${i}" value="${r.answers[i] || ''}" oninput="blankInput(${i}, this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:${Math.max(3, w.word.length + 1)}em;">`;
+        }
+        return w.word;
+      }).join(' ');
+      const filled = Object.keys(r.answers).filter(k => r.answers[k].trim()).length;
+      const total = r.blanks.filter(b => b.isBlank).length;
+      content.innerHTML = `
+        <div class="mission-runner">
+          <div class="mission-runner-title">미션 3 · 빈칸 채우기</div>
+          <div class="mission-runner-desc">빈칸을 채워주세요. (60% 빈칸)<br><span style="font-size:13px;color:var(--text-3);">모든 빈칸을 정확히 맞추면 클리어! ⭐⭐⭐</span></div>
+          <div class="verse-text-display large">${html}</div>
+          <div class="progress-text">${filled} / ${total} 채움</div>
+          <button class="big-btn" onclick="blankGrade()">채점하기</button>
+        </div>
+      `;
+    } else if (r.phase === 'graded') {
+      const html = r.blanks.map((w, i) => {
+        if (w.isBlank) {
+          const ans = (r.answers[i] || '').trim();
+          const correct = normalizeWord(ans) === normalizeWord(w.word);
+          return `<span class="blank ${correct ? 'correct' : 'wrong'}">${ans || '(빈)'}</span>${!correct ? ` <span style="font-size:11px;color:var(--success);">${w.word}</span>` : ''}`;
+        }
+        return w.word;
+      }).join(' ');
+      const total = r.blanks.filter(b => b.isBlank).length;
+      let correct = 0;
+      r.blanks.forEach((w, i) => {
+        if (w.isBlank && normalizeWord((r.answers[i] || '').trim()) === normalizeWord(w.word)) correct++;
+      });
+      const rate = Math.round(correct / total * 100);
+      const passed = rate === 100;
+      const stars = passed ? 3 : 0;
+      const wrongCount = total - correct;
+      content.innerHTML = `
+        <div class="mission-runner">
+          <div class="mission-runner-title">미션 3 · 채점 결과</div>
+          <div class="score-card ${passed ? 'pass' : 'fail'}">
+            <div class="score-num">${rate}<span style="font-size:24px;">%</span></div>
+            <div class="score-label">${correct} / ${total} 맞춤</div>
+            <div class="pass-badge ${passed ? 'pass' : 'fail'}">${passed ? `⭐ 완벽 클리어!` : `${wrongCount}개 틀림 — 모두 맞춰야 통과`}</div>
+          </div>
+          <div class="verse-text-display large">${html}</div>
+          ${passed
+            ? `<button class="big-btn success" onclick="completeMission('blank', 3, ${rate})">미션 클리어 ⭐⭐⭐</button>`
+            : `<button class="big-btn danger" onclick="blankRetry()">다시 시도</button>`}
+        </div>
+      `;
+    }
+  }
+  else if (r.missionId === 'voice') {
+    renderVoiceMission(v, '미션 4 · 음성 암송', '한 어절도 빠뜨리지 않고 외우면 클리어!');
+  }
+  else if (r.missionId === 'integration') {
+    const prevVerses = verses.filter(x => x.n < r.n && state.stages[x.n].cleared);
+    const allVerses = [...prevVerses, v];
+    const combinedText = allVerses.map(x => x.text).join(' ');
+    renderVoiceMission(
+      { text: combinedText, n: r.n },
+      '미션 5 · 누적 암송',
+      `${allVerses[0].n}~${r.n}절을 모두 정확히 외워주세요`,
+      true
+    );
+  }
+}
+
+function renderVoiceMission(target, title, desc, isIntegration = false) {
+  const r = state.runner;
+  let body = `
+    <div class="mission-runner">
+      <div class="mission-runner-title">${title}</div>
+      <div class="mission-runner-desc">${desc}</div>
+  `;
+  if (r.phase === 'idle' || r.phase === 'recording') {
+    body += `<div class="verse-text-display large dim">${renderFirstChar(target.text)}</div>`;
+    body += `<button class="mic-btn-big ${isRecording ? 'recording' : ''}" onclick="toggleRecording()">${isRecording ? '⏹  암송 끝' : '🎤  암송 시작'}</button>`;
+    body += `<div class="test-status" id="test-status">${isRecording ? '🔴 듣는 중...' : '버튼을 누르고 외운 대로 말해주세요'}</div>`;
+  } else if (r.phase === 'graded') {
+    const res = r.result;
+    // 100% 일치(missing 0)만 통과, 별 3개
+    // partial(음성 인식 오차)은 통과 허용 — 외운 사람은 통과 가능
+    const perfect = res.missingCount === 0;
+    const passed = perfect;
+    const stars = perfect ? 3 : 0;
+    const alignedHtml = res.aligned.map(a => {
+      if (a.status === 'ok') return `<span class="word-ok">${a.word}</span>`;
+      if (a.status === 'partial') return `<span class="word-partial">${a.word}</span>`;
+      return `<span class="word-missing">${a.word}</span>`;
+    }).join(' ');
+    body += `
+      <div class="score-card ${passed ? 'pass' : 'fail'}">
+        <div class="score-num">${res.score}<span style="font-size:24px;">점</span></div>
+        <div class="score-label">정확 ${res.okCount} · 유사 ${res.partialCount} · 빠짐 ${res.missingCount}</div>
+        <div class="pass-badge ${passed ? 'pass' : 'fail'}">${passed ? `⭐ 완벽 클리어!` : `빠진 어절 ${res.missingCount}개 — 모두 외워야 통과`}</div>
+      </div>
+      <div class="verse-text-display large">${alignedHtml}</div>
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:1rem;">인식된 말: ${res.heard}</div>
+      ${passed
+        ? `<button class="big-btn success" onclick="completeMission('${r.missionId}', 3, ${res.score})">미션 클리어 ⭐⭐⭐</button>`
+        : `<button class="big-btn danger" onclick="voiceRetry()">다시 시도</button>`}
+    `;
+  }
+  body += '</div>';
+  document.getElementById('mission-content').innerHTML = body;
+}
+
+// ========== 미션 핸들러 ==========
+function readPlus() {
+  state.runner.count++;
+  state.runner.dirty = true;
+  renderMission();
+}
+function readMinus() {
+  state.runner.count = Math.max(0, state.runner.count - 1);
+  renderMission();
+}
+function hintReveal() {
+  state.runner.phase = 'confirm';
+  renderMission();
+}
+function hintConfirm(level) {
+  const r = state.runner;
+  r.dirty = true;
+  if (level === 'yes') {
+    r.count++;
+  } else if (level === 'mid') {
+    r.count += 0.5;
+  }
+  // 못 외우면 카운트 그대로
+  if (r.count >= r.target) {
+    completeMission('hint', 3, 100);
+  } else {
+    r.phase = 'try';
+    renderMission();
+  }
+}
+function blankInput(idx, val) {
+  state.runner.answers[idx] = val;
+  state.runner.dirty = true;
+}
+function blankGrade() {
+  state.runner.phase = 'graded';
+  renderMission();
+}
+function blankRetry() {
+  initMissionRunner('blank');
+  renderMission();
+}
+function voiceRetry() {
+  state.runner.phase = 'idle';
+  state.runner.heard = '';
+  state.runner.result = null;
+  renderMission();
+}
+
+// ========== 미션 완료 ==========
+function completeMission(missionId, stars, score) {
+  const stage = state.stages[state.currentStage];
+  const mission = stage.missions[missionId];
+  const wasCleared = mission.cleared;
+  const oldStars = mission.stars;
+
+  mission.cleared = true;
+  mission.stars = Math.max(mission.stars, stars);
+  mission.best = Math.max(mission.best, score);
+  mission.count = (mission.count || 0) + 1;
+
+  // 스테이지 클리어 체크
+  const allCleared = Object.values(stage.missions).every(m => m.cleared);
+  const wasStageCleared = stage.cleared;
+  if (allCleared) {
+    stage.cleared = true;
+    stage.stars = Object.values(stage.missions).reduce((s, m) => s + m.stars, 0);
+  }
+
+  recalcTotals();
+  updateStreak();
+  saveState();
+
+  state.runner.completed = true;
+
+  // 보상 화면
+  showReward({
+    title: wasCleared ? '미션 재도전' : '미션 클리어',
+    headline: MISSIONS.find(m => m.id === missionId).name,
+    stars: mission.stars,
+    maxStars: 3,
+    message: !wasStageCleared && allCleared
+      ? `🎉 스테이지 ${state.currentStage} 클리어!<br>다음 스테이지가 열렸어요.`
+      : (mission.stars > oldStars
+          ? `최고 기록 갱신! ⭐ ${mission.stars}개`
+          : `잘하셨어요!`),
+    onClose: () => {
+      if (!wasStageCleared && allCleared) {
+        // 스테이지 클리어 시 홈으로
+        goHome();
+      } else {
+        state.currentMission = null;
+        state.runner = null;
+        showScreen('stage');
+        renderStage();
+      }
+    }
+  });
+}
+
+// ========== 보상 오버레이 ==========
+let rewardCloseCallback = null;
+function showReward(opts) {
+  document.getElementById('reward-title').textContent = opts.title;
+  document.getElementById('reward-headline').textContent = opts.headline;
+  let starsHtml = '';
+  for (let i = 0; i < opts.maxStars; i++) {
+    starsHtml += `<span class="reward-star ${i < opts.stars ? 'gold' : 'empty'}" style="animation-delay:${i * 0.15}s">★</span>`;
+  }
+  document.getElementById('reward-stars').innerHTML = starsHtml;
+  document.getElementById('reward-message').innerHTML = opts.message || '';
+  rewardCloseCallback = opts.onClose || null;
+  document.getElementById('reward-overlay').classList.add('show');
+}
+function closeReward() {
+  document.getElementById('reward-overlay').classList.remove('show');
+  if (rewardCloseCallback) {
+    const cb = rewardCloseCallback;
+    rewardCloseCallback = null;
+    setTimeout(cb, 100);
+  }
+}
+
+// ========== 토스트 ==========
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ========== 첫글자/빈칸 헬퍼 ==========
+function renderFirstChar(text) {
+  return text.split(' ').map(word => {
+    if (!word) return '';
+    const first = word.charAt(0);
+    const rest = word.slice(1);
+    return `<span class="hint-char">${first}</span><span class="hint-rest">${rest.replace(/[가-힣]/g, '·')}</span>`;
+  }).join(' ');
+}
+function seededRandom(seed) {
+  let s = seed;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+function generateBlanks(text, rate, seed) {
+  const words = text.split(' ');
+  const rand = seededRandom(seed * 1000);
+  return words.map(w => {
+    if (!w) return { word: '', isBlank: false };
+    if (rand() < rate && w.length > 1) return { word: w, isBlank: true };
+    return { word: w, isBlank: false };
+  });
+}
+function normalizeWord(w) {
+  return (w || '').replace(/[.,!?\s'"·]/g, '').toLowerCase();
+}
+
+// ========== 음성 인식 ==========
+let recognition = null;
+let isRecording = false;
+let lastTranscript = '';
+let finishTimer = null;
+let isFinishing = false; // 중복 처리 방지 가드
+
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang = 'ko-KR';
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+  return r;
+}
+
+function toggleRecording() {
+  if (isRecording) stopRecording();
+  else startRecording();
+}
+
+function startRecording() {
+  recognition = initRecognition();
+  if (!recognition) {
+    alert('이 브라우저는 음성 인식을 지원하지 않아요.\nChrome 또는 Safari에서 열어주세요.');
+    return;
+  }
+  lastTranscript = '';
+  isFinishing = false;
+  if (state.runner) {
+    state.runner.heard = '';
+    state.runner.result = null;
+    state.runner.phase = 'recording';
+  }
+
+  recognition.onresult = (event) => {
+    let interim = '', final = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += t + ' ';
+      else interim += t;
+    }
+    if (final) lastTranscript += final;
+    const display = (lastTranscript + interim).trim();
+    const el = document.getElementById('test-status');
+    if (el) el.innerHTML = '🔴 듣는 중... <br><span style="color:var(--accent);font-size:12px;">"' + (display || '...') + '"</span>';
+  };
+  recognition.onerror = (event) => {
+    if (event.error === 'not-allowed') {
+      alert('마이크 권한이 필요해요. Safari 설정에서 마이크를 허용해주세요.');
+      stopRecording();
+    } else if (event.error === 'network') {
+      alert('네트워크 연결이 필요해요. (음성 인식은 인터넷이 필요합니다)');
+      stopRecording();
+    } else if (event.error === 'aborted' || event.error === 'no-speech') {
+      // 정상적인 중단이거나 무음 - 무시
+    } else {
+      console.warn('Recognition error:', event.error);
+    }
+  };
+  recognition.onend = () => {
+    // stop()이 호출된 후 들어오는 경우만 처리
+    if (!isRecording) return;
+    finishRecording();
+  };
+
+  try {
+    recognition.start();
+    isRecording = true;
+    if (state.runner) state.runner.dirty = true;
+    if (state.currentScreen === 'boss') renderBoss();
+    else if (state.currentScreen === 'freestyle') renderFreestyle();
+    else renderMission();
+  } catch (e) {
+    alert('음성 인식 시작 실패: ' + e.message);
+  }
+}
+
+function stopRecording() {
+  // 사용자가 명시적으로 중단 → 즉시 결과 처리
+  // onend를 기다리지 않음 (Safari에서 안 올 수도 있음)
+  if (!isRecording) return;
+
+  // 즉시 UI 피드백: 버튼 비활성화 + 상태 변경
+  const micBtn = document.querySelector('.mic-btn-big');
+  if (micBtn) {
+    micBtn.disabled = true;
+    micBtn.innerHTML = '⏳ 채점 중...';
+  }
+  const statusEl = document.getElementById('test-status');
+  if (statusEl) statusEl.textContent = '⏳ 결과를 확인하는 중...';
+
+  // 인식 엔진은 별도로 정리 (결과는 이미 처리)
+  if (recognition) {
+    try { recognition.stop(); } catch (e) {}
+  }
+
+  // 즉시 채점 진행
+  finishRecording();
+
+  // 혹시 onend가 늦게 와서 추가 호출되는 걸 막기 위한 안전장치
+  if (finishTimer) clearTimeout(finishTimer);
+  finishTimer = setTimeout(() => {
+    if (isRecording) {
+      isRecording = false;
+    }
+  }, 3000);
+}
+
+function finishRecording() {
+  // 중복 호출 방지
+  if (isFinishing) return;
+  isFinishing = true;
+
+  isRecording = false;
+  if (finishTimer) {
+    clearTimeout(finishTimer);
+    finishTimer = null;
+  }
+
+  const heard = lastTranscript.trim();
+  if (heard && state.runner) {
+    state.runner.heard = heard;
+    if (state.currentScreen === 'boss') {
+      gradeBoss(heard);
+    } else if (state.currentScreen === 'freestyle') {
+      gradeFreestyleVoice(heard);
+    } else {
+      gradeVoiceMission(heard);
+    }
+  } else {
+    if (state.runner) state.runner.phase = 'idle';
+    if (state.currentScreen === 'boss') renderBoss();
+    else if (state.currentScreen === 'freestyle') renderFreestyle();
+    else renderMission();
+
+    // 음성이 전혀 인식되지 않은 경우 안내
+    if (!heard) {
+      const el = document.getElementById('test-status');
+      if (el) el.textContent = '⚠️ 음성이 인식되지 않았어요. 다시 시도해주세요.';
+    }
+  }
+
+  // 다음 시도를 위해 가드 해제 (다음 startRecording 시 false로 다시 설정됨)
+  setTimeout(() => { isFinishing = false; }, 500);
+}
+
+function similarity(a, b) {
+  a = normalizeWord(a); b = normalizeWord(b);
+  if (a === b) return 1;
+  if (!a || !b) return 0;
+  const m = a.length, n = b.length;
+  const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  return 1 - dp[m][n] / Math.max(m, n);
+}
+
+function alignWords(original, heard) {
+  const origWords = original.split(/\s+/).filter(Boolean);
+  const heardWords = heard.split(/\s+/).filter(Boolean);
+  const result = [];
+  let heardIdx = 0;
+  for (let i = 0; i < origWords.length; i++) {
+    const orig = origWords[i];
+    let bestSim = 0, bestIdx = -1;
+    const lookAhead = Math.min(heardIdx + 3, heardWords.length);
+    for (let j = heardIdx; j < lookAhead; j++) {
+      const sim = similarity(orig, heardWords[j]);
+      if (sim > bestSim) { bestSim = sim; bestIdx = j; }
+    }
+    if (bestSim >= 0.7) {
+      result.push({ word: orig, sim: bestSim, status: bestSim < 1 ? 'partial' : 'ok' });
+      heardIdx = bestIdx + 1;
+    } else if (bestSim >= 0.4) {
+      result.push({ word: orig, sim: bestSim, status: 'partial' });
+      heardIdx = bestIdx + 1;
+    } else {
+      result.push({ word: orig, sim: 0, status: 'missing' });
+    }
+  }
+  return result;
+}
+
+function gradeVoiceMission(heard) {
+  const r = state.runner;
+  const v = verses.find(x => x.n === r.n);
+  let targetText = v.text;
+  if (r.missionId === 'integration') {
+    const prevVerses = verses.filter(x => x.n < r.n && state.stages[x.n].cleared);
+    targetText = [...prevVerses, v].map(x => x.text).join(' ');
+  }
+  const aligned = alignWords(targetText, heard);
+  const total = aligned.length;
+  const okCount = aligned.filter(a => a.status === 'ok').length;
+  const partialCount = aligned.filter(a => a.status === 'partial').length;
+  const missingCount = aligned.filter(a => a.status === 'missing').length;
+  const score = Math.round((okCount + partialCount * 0.5) / total * 100);
+  r.result = { aligned, score, okCount, partialCount, missingCount, total, heard };
+  r.phase = 'graded';
+  renderMission();
+}
+
+// ========== 보스 ==========
+function renderBoss() {
+  const content = document.getElementById('boss-content');
+  const fullText = verses.map(v => v.text).join(' ');
+  if (state.bossCleared) {
+    content.innerHTML = renderCertificate();
+    return;
+  }
+  if (!state.runner || state.runner.target !== 'boss') {
+    state.runner = { target: 'boss', phase: 'intro', heard: '', result: null };
+  }
+  const r = state.runner;
+  if (r.phase === 'intro') {
+    content.innerHTML = `
+      <div class="mission-runner">
+        <div class="mission-runner-title">⚔️ 최종 보스</div>
+        <div class="mission-runner-desc">로마서 8장 1절부터 11절까지<br>끊지 않고 연속으로 암송해주세요.<br><br><b style="color:var(--gold);">한 어절도 빠뜨리지 않으면</b> 클리어!</div>
+        <div style="background:var(--surface-2);border-radius:10px;padding:14px;font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:1rem;">
+          💡 도전 전 팁<br>
+          · 조용한 곳에서 또박또박 말하세요<br>
+          · 5분 정도 걸려요<br>
+          · 발음이 약간 새도 (정좌함 등) 통과되니 걱정 마세요<br>
+          · 빠뜨린 어절은 빨간색으로 표시돼요
+        </div>
+        <button class="big-btn" onclick="state.runner.phase='idle';renderBoss()">⚔️ 도전 시작</button>
+      </div>
+    `;
+  } else if (r.phase === 'idle' || r.phase === 'recording') {
+    content.innerHTML = `
+      <div class="mission-runner">
+        <div class="mission-runner-title">⚔️ 최종 보스 — 1~11절 연속 암송</div>
+        <div class="verse-text-display dim" style="font-size:14px;max-height:240px;overflow-y:auto;">${renderFirstChar(fullText)}</div>
+        <button class="mic-btn-big ${isRecording ? 'recording' : ''}" onclick="toggleRecording()">${isRecording ? '⏹  암송 끝' : '🎤  암송 시작'}</button>
+        <div class="test-status" id="test-status">${isRecording ? '🔴 듣는 중...' : '버튼을 누르고 외운 대로 말해주세요'}</div>
+      </div>
+    `;
+  } else if (r.phase === 'graded') {
+    const res = r.result;
+    const passed = res.missingCount === 0;
+    const alignedHtml = res.aligned.slice(0, 60).map(a => {
+      if (a.status === 'ok') return `<span class="word-ok">${a.word}</span>`;
+      if (a.status === 'partial') return `<span class="word-partial">${a.word}</span>`;
+      return `<span class="word-missing">${a.word}</span>`;
+    }).join(' ') + (res.aligned.length > 60 ? ' ...' : '');
+    content.innerHTML = `
+      <div class="mission-runner">
+        <div class="mission-runner-title">⚔️ 보스 도전 결과</div>
+        <div class="score-card ${passed ? 'pass' : 'fail'}">
+          <div class="score-num">${res.score}<span style="font-size:24px;">점</span></div>
+          <div class="score-label">정확 ${res.okCount} · 유사 ${res.partialCount} · 빠짐 ${res.missingCount}</div>
+          <div class="pass-badge ${passed ? 'pass' : 'fail'}">${passed ? '👑 완벽한 암송! 보스 클리어!' : `빠진 어절 ${res.missingCount}개 — 모두 외워야 통과`}</div>
+        </div>
+        <div class="verse-text-display large">${alignedHtml}</div>
+        ${passed
+          ? `<button class="big-btn success" onclick="bossClear(${res.score})">👑 인증서 받기</button>`
+          : `<button class="big-btn danger" onclick="state.runner.phase='idle';state.runner.result=null;renderBoss()">다시 도전</button>`}
+      </div>
+    `;
+  }
+}
+
+function gradeBoss(heard) {
+  const fullText = verses.map(v => v.text).join(' ');
+  const aligned = alignWords(fullText, heard);
+  const total = aligned.length;
+  const okCount = aligned.filter(a => a.status === 'ok').length;
+  const partialCount = aligned.filter(a => a.status === 'partial').length;
+  const missingCount = aligned.filter(a => a.status === 'missing').length;
+  const score = Math.round((okCount + partialCount * 0.5) / total * 100);
+  state.runner.result = { aligned, score, okCount, partialCount, missingCount, total, heard };
+  state.runner.phase = 'graded';
+  renderBoss();
+}
+
+function bossClear(score) {
+  state.bossCleared = true;
+  state.bossBestScore = Math.max(state.bossBestScore, score);
+  if (!state.bossCertDate) state.bossCertDate = new Date().toLocaleDateString('ko-KR');
+  state.runner = null;
+  saveState();
+  showReward({
+    title: '🎊 보스 클리어',
+    headline: '👑 로마서 8장 마스터',
+    stars: 3,
+    maxStars: 3,
+    message: `${score}점 달성! 인증서가 발급됐어요.<br><br>이제 자유 학습에서 언제든 연습하세요.`,
+    onClose: () => {
+      showScreen('boss');
+      renderBoss();
+    }
+  });
+}
+
+function renderCertificate() {
+  return `
+    <div class="certificate">
+      <div class="cert-emblem">👑</div>
+      <div class="cert-title">CERTIFICATE OF MEMORIZATION</div>
+      <div class="cert-headline">로마서 8장 1-11절<br>암송 완성</div>
+      <div class="cert-text">
+        위 사람은 로마서 8장 1절부터 11절까지를<br>
+        연속 암송하여 본 과정을 완료하였음을<br>
+        증명합니다.
+      </div>
+      <div class="cert-detail">
+        최고 점수 ${state.bossBestScore}점 · ${state.bossCertDate}<br>
+        총 ⭐ ${state.totalStars} 획득
+      </div>
+    </div>
+    <button class="big-btn" onclick="state.runner={target:'boss',phase:'idle',heard:'',result:null};renderBoss()" style="margin-top:1rem;">🔄 다시 도전하기</button>
+  `;
+}
+
+// ========== 자유 학습 ==========
+function renderFreestyle() {
+  const mode = state.freestyleMode;
+  const unlockedVerses = verses.filter(v => state.stages[v.n].cleared);
+  if (unlockedVerses.length === 0) {
+    goHome();
+    return;
+  }
+  document.getElementById('freestyle-title').textContent = {
+    full: '📖 전체보기', hint: '👁 첫글자', blank: '✏️ 빈칸', test: '🎤 테스트'
+  }[mode];
+
+  const content = document.getElementById('freestyle-content');
+  if (mode === 'test') {
+    if (state.freestyleVerse >= unlockedVerses.length) state.freestyleVerse = 0;
+    const v = unlockedVerses[state.freestyleVerse];
+    if (!state.runner || state.runner.target !== 'freestyle') {
+      state.runner = { target: 'freestyle', phase: 'idle', heard: '', result: null };
+    }
+    const navHtml = `
+      <div style="display:flex;gap:6px;margin-bottom:1rem;">
+        <button class="secondary-btn" style="flex:0 0 auto;width:auto;padding:8px 14px;margin:0;" onclick="freestylePrev()" ${state.freestyleVerse === 0 ? 'disabled' : ''}>‹</button>
+        <div style="flex:1;text-align:center;padding:8px;background:var(--surface-2);border-radius:10px;font-size:14px;">${v.n}절 / ${unlockedVerses.length}개 해제됨</div>
+        <button class="secondary-btn" style="flex:0 0 auto;width:auto;padding:8px 14px;margin:0;" onclick="freestyleNext()" ${state.freestyleVerse === unlockedVerses.length - 1 ? 'disabled' : ''}>›</button>
+      </div>
+    `;
+    let body = navHtml + '<div class="mission-runner">';
+    if (state.runner.phase === 'idle' || state.runner.phase === 'recording') {
+      body += `<div class="verse-text-display large dim">${renderFirstChar(v.text)}</div>`;
+      body += `<button class="mic-btn-big ${isRecording ? 'recording' : ''}" onclick="toggleRecording()">${isRecording ? '⏹  암송 끝' : '🎤  암송 시작'}</button>`;
+      body += `<div class="test-status" id="test-status">${isRecording ? '🔴 듣는 중...' : '버튼을 누르고 외운 대로 말해주세요'}</div>`;
+    } else if (state.runner.phase === 'graded') {
+      const res = state.runner.result;
+      const alignedHtml = res.aligned.map(a => {
+        if (a.status === 'ok') return `<span class="word-ok">${a.word}</span>`;
+        if (a.status === 'partial') return `<span class="word-partial">${a.word}</span>`;
+        return `<span class="word-missing">${a.word}</span>`;
+      }).join(' ');
+      body += `
+        <div class="score-card ${res.score >= 85 ? 'pass' : 'fail'}">
+          <div class="score-num">${res.score}<span style="font-size:24px;">점</span></div>
+          <div class="score-label">정확 ${res.okCount} · 유사 ${res.partialCount} · 빠짐 ${res.missingCount}</div>
+        </div>
+        <div class="verse-text-display large">${alignedHtml}</div>
+        <button class="big-btn" onclick="state.runner.phase='idle';state.runner.result=null;renderFreestyle()">다시 시도</button>
+      `;
+    }
+    body += '</div>';
+    content.innerHTML = body;
+    return;
+  }
+
+  // full / hint / blank: 해제된 절 전부 표시
+  let html = '<div style="font-size:12px;color:var(--text-3);margin-bottom:1rem;text-align:center;">해제된 ' + unlockedVerses.length + '개 절 표시</div>';
+  unlockedVerses.forEach(v => {
+    let body;
+    if (mode === 'full') body = v.text;
+    else if (mode === 'hint') body = renderFirstChar(v.text);
+    else if (mode === 'blank') {
+      const blanks = generateBlanks(v.text, 0.4, v.n + Date.now() % 100);
+      body = blanks.map(w => {
+        if (w.isBlank) return `<span class="blank" onclick="this.classList.toggle('revealed')">${w.word}</span>`;
+        return w.word;
+      }).join(' ');
+    }
+    html += `
+      <div class="mission-runner" style="margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;">로마서 8:${v.n}</div>
+        <div style="font-size:16px;line-height:1.9;">${body}</div>
+      </div>
+    `;
+  });
+  content.innerHTML = html;
+}
+
+function freestylePrev() {
+  if (state.freestyleVerse > 0) {
+    state.freestyleVerse--;
+    state.runner.phase = 'idle';
+    state.runner.result = null;
+    renderFreestyle();
+  }
+}
+function freestyleNext() {
+  const unlockedVerses = verses.filter(v => state.stages[v.n].cleared);
+  if (state.freestyleVerse < unlockedVerses.length - 1) {
+    state.freestyleVerse++;
+    state.runner.phase = 'idle';
+    state.runner.result = null;
+    renderFreestyle();
+  }
+}
+function gradeFreestyleVoice(heard) {
+  const unlockedVerses = verses.filter(v => state.stages[v.n].cleared);
+  const v = unlockedVerses[state.freestyleVerse];
+  const aligned = alignWords(v.text, heard);
+  const total = aligned.length;
+  const okCount = aligned.filter(a => a.status === 'ok').length;
+  const partialCount = aligned.filter(a => a.status === 'partial').length;
+  const missingCount = aligned.filter(a => a.status === 'missing').length;
+  const score = Math.round((okCount + partialCount * 0.5) / total * 100);
+  state.runner.result = { aligned, score, okCount, partialCount, missingCount, total, heard };
+  state.runner.phase = 'graded';
+  renderFreestyle();
+}
+
+// ========== 설정 메뉴 ==========
+function renderMenu() {
+  const content = document.getElementById('menu-content');
+  content.innerHTML = `
+    <div class="mission-runner">
+      <div class="mission-runner-title">📊 통계</div>
+      <div style="font-size:14px;line-height:2;">
+        총 별 ⭐ ${state.totalStars} / ${state.maxStars}<br>
+        클리어한 스테이지: ${verses.filter(v => state.stages[v.n].cleared).length} / 11<br>
+        연속 학습일: 🔥 ${state.streak || 0}일<br>
+        보스 최고점: ${state.bossBestScore || '미도전'}점
+      </div>
+    </div>
+    <div class="mission-runner">
+      <div class="mission-runner-title">⚠️ 초기화</div>
+      <button class="secondary-btn" onclick="resetAll()" style="color:var(--danger);border-color:var(--danger-border);">🗑 모든 진행 초기화</button>
+    </div>
+    <div class="mission-runner">
+      <div class="mission-runner-title">ℹ️ 안내</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.8;">
+        본문: 로마서 8:1-11 (개역개정)<br>
+        모든 데이터는 이 기기에만 저장됩니다.<br>
+        Chrome / Safari 권장. 음성 인식은 인터넷 필요.<br>
+        홈 화면에 추가: 공유 → "홈 화면에 추가"
+      </div>
+    </div>
+  `;
+}
+
+function resetAll() {
+  if (!confirm('정말 모든 진행을 초기화할까요?\n별, 스테이지, 보스 등 모든 데이터가 삭제됩니다.')) return;
+  if (!confirm('다시 한 번 확인합니다. 정말 초기화할까요?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = {
+    stages: {}, bossCleared: false, bossBestScore: 0, bossCertDate: null,
+    totalStars: 0, streak: 0, lastStudyDate: null,
+    currentStage: null, currentMission: null, currentScreen: 'home',
+    runner: null, freestyleMode: null, freestyleVerse: 0
+  };
+  for (const v of verses) state.stages[v.n] = defaultStage(v.n);
+  recalcTotals();
+  goHome();
+  showToast('초기화 완료');
+}
+
+// ========== 초기화 ==========
+loadState();
+renderHome();
+</script>
+
+</body>
+</html>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
