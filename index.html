@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="롬8 정복">
 <meta name="theme-color" content="#1a1a17">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="app-version" content="v4.5-2025-05-30">
 <title>로마서 8장 정복</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
@@ -1999,6 +2003,14 @@ function renderMenu() {
       </div>
     </div>
     <div class="mission-runner">
+      <div class="mission-runner-title">🔄 업데이트</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.8;margin-bottom:10px;">
+        현재 버전: <b style="color:var(--text);">v4.5</b><br>
+        앱이 옛 버전 같으면 아래 버튼을 눌러주세요.
+      </div>
+      <button class="secondary-btn" onclick="forceReload()" style="color:var(--accent);border-color:var(--accent-border);">🔄 최신 버전 가져오기</button>
+    </div>
+    <div class="mission-runner">
       <div class="mission-runner-title">ℹ️ 안내</div>
       <div style="font-size:13px;color:var(--text-2);line-height:1.8;">
         본문: 로마서 8:1-11 (개역개정)<br>
@@ -2008,6 +2020,20 @@ function renderMenu() {
       </div>
     </div>
   `;
+}
+
+function forceReload() {
+  // 진행 데이터는 보존, 캐시만 무력화
+  showToast('🔄 최신 버전 가져오는 중...');
+  setTimeout(() => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('v', Date.now());
+      window.location.replace(url.toString());
+    } catch (e) {
+      window.location.reload();
+    }
+  }, 500);
 }
 
 function resetAll() {
@@ -2026,9 +2052,77 @@ function resetAll() {
   showToast('초기화 완료');
 }
 
+// ========== 버전 체크 ==========
+const CURRENT_VERSION = '4.5';
+
+async function checkForUpdate() {
+  try {
+    // 캐시 무력화를 위해 쿼리 파라미터 추가
+    const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.version && data.version !== CURRENT_VERSION) {
+      if (data.forceUpdate === true) {
+        showForceUpdate(data.version, data.changes);
+      } else {
+        showUpdateBanner(data.version, data.changes);
+      }
+    }
+  } catch (e) {
+    // 오프라인이거나 version.json이 없으면 그냥 무시
+  }
+}
+
+// 무시 불가능한 전체화면 강제 업데이트
+function showForceUpdate(newVersion, changes) {
+  if (document.getElementById('force-update-overlay')) return;
+  // 진행 중인 녹음 중지
+  if (isRecording) { try { stopRecording(); } catch(e){} }
+  const overlay = document.createElement('div');
+  overlay.id = 'force-update-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  overlay.innerHTML = `
+    <div style="background:var(--surface);border:0.5px solid var(--accent-border);border-radius:20px;padding:2rem 1.5rem;text-align:center;max-width:340px;width:100%;box-shadow:0 0 40px rgba(107,163,240,0.3);">
+      <div style="font-size:44px;margin-bottom:12px;">🚀</div>
+      <div style="font-size:20px;font-weight:700;margin-bottom:10px;">필수 업데이트</div>
+      <div style="font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:6px;">
+        새 버전 <b style="color:var(--accent);">v${newVersion}</b>이 나왔어요.<br>
+        계속 사용하려면 업데이트가 필요합니다.
+      </div>
+      <div style="font-size:12px;color:var(--text-3);line-height:1.6;margin-bottom:1.5rem;background:var(--surface-2);border-radius:10px;padding:10px 12px;">
+        ${changes || '안정성 개선 및 버그 수정'}
+      </div>
+      <button onclick="forceReload()" style="width:100%;background:var(--accent);color:white;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(107,163,240,0.3);">
+        지금 업데이트
+      </button>
+      <div style="font-size:11px;color:var(--text-3);margin-top:12px;">진행 기록은 그대로 보존됩니다</div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function showUpdateBanner(newVersion, changes) {
+  const existing = document.getElementById('update-banner');
+  if (existing) return;
+  const banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:var(--accent);color:white;padding:12px 16px;z-index:300;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:13px;';
+  banner.innerHTML = `
+    <div style="flex:1;line-height:1.4;">
+      🎉 <b>새 버전 v${newVersion}</b><br>
+      <span style="font-size:11px;opacity:0.9;">${changes || ''}</span>
+    </div>
+    <button onclick="forceReload()" style="background:white;color:var(--accent);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">업데이트</button>
+    <button onclick="document.getElementById('update-banner').remove()" style="background:transparent;color:white;border:none;font-size:20px;cursor:pointer;padding:0 4px;font-family:inherit;">×</button>
+  `;
+  document.body.prepend(banner);
+}
+
 // ========== 초기화 ==========
 loadState();
 renderHome();
+// 1초 후 새 버전 체크 (앱 시작 후 잠시 뒤)
+setTimeout(checkForUpdate, 1000);
 </script>
 
 </body>
